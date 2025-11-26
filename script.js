@@ -252,7 +252,7 @@ async function fetchFacebookVideo(url) {
             platform: 'facebook',
             title: title,
             author: author,
-            thumbnail: data.thumbnail || null,
+            thumbnail: null, // Facebook tidak punya thumbnail
             note: '✨ Video diambil dalam kualitas terbaik yang tersedia',
             downloadLinks: [{
                 quality: '🎥 HD Quality',
@@ -362,17 +362,18 @@ function displayResults(data) {
     
     let thumbnailHtml;
     if (data.thumbnail) {
-        thumbnailHtml = `<img src="${data.thumbnail}" alt="Video thumbnail" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-        <div style="display: none; background: linear-gradient(135deg, #9370DB 0%, #8B7AB8 100%); padding: 60px 40px; border-radius: 12px; color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;">
+        // Ada thumbnail - tampilkan gambar
+        thumbnailHtml = `<img src="${data.thumbnail}" alt="Video thumbnail" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">`;
+    } else if (data.platform === 'facebook') {
+        // Facebook tanpa thumbnail - tampilkan "Preview tidak tersedia"
+        thumbnailHtml = `<div style="background: linear-gradient(135deg, #9370DB 0%, #8B7AB8 100%); padding: 60px 40px; border-radius: 12px; color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;">
             <div style="font-size: 48px; margin-bottom: 16px;">📹</div>
             <div style="font-size: 16px; font-weight: 500; opacity: 0.9;">Preview tidak tersedia</div>
             <div style="font-size: 13px; margin-top: 8px; opacity: 0.7;">Video siap didownload</div>
         </div>`;
     } else {
-        thumbnailHtml = `<div style="background: linear-gradient(135deg, #9370DB 0%, #8B7AB8 100%); padding: 60px 40px; border-radius: 12px; color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;">
-            <div style="font-size: 48px; margin-bottom: 16px;">📹</div>
-            <div style="font-size: 16px; font-weight: 500; opacity: 0.9;">Preview tidak tersedia</div>
-            <div style="font-size: 13px; margin-top: 8px; opacity: 0.7;">Video siap didownload</div>
+        // Platform lain tanpa thumbnail - placeholder generik
+        thumbnailHtml = `<div style="background: linear-gradient(135deg, #9370DB 0%, #8B7AB8 100%); padding: 80px; border-radius: 12px; color: white; font-size: 48px; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
         </div>`;
     }
     
