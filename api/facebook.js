@@ -20,70 +20,89 @@ export default async function handler(req, res) {
         return res.status(400).json({ success: false, message: "URL Facebook tidak valid." });
     }
 
-    // Try multiple APIs
-    const apis = [
-        // API 1: Facebook Video Downloader
-        async () => {
-            const apiUrl = "https://facebook-video-downloader-api.vercel.app/api";
-            const response = await fetch(apiUrl, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ url }),
-            });
-            const data = await response.json();
-            if (data.success && data.video && data.video.length > 0) {
-                return data.video[0].url;
-            }
-            throw new Error("No video found");
-        },
-        // API 2: Cobalt (support FB format baru)
-        async () => {
-            const apiUrl = "https://api.cobalt.tools/api/json";
-            const response = await fetch(apiUrl, {
-                method: "POST",
-                headers: { 
-                    "Accept": "application/json",
-                    "Content-Type": "application/json" 
-                },
-                body: JSON.stringify({ url, vCodec: "h264", vQuality: "720" }),
-            });
-            const data = await response.json();
-            if (data.url) return data.url;
-            throw new Error("Cobalt failed");
-        },
-        // API 3: SnapSave
-        async () => {
-            const apiUrl = "https://snapsave.app/action.php";
-            const response = await fetch(apiUrl, {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: new URLSearchParams({ url }),
-            });
-            const html = await response.text();
-            const match = html.match(/href="(https?:\/\/[^"]+\.mp4[^"]*)"/i);
-            if (match) return match[1];
-            throw new Error("SnapSave failed");
-        },
-    ];
+    try {
+        // API yang reliable untuk Facebook (support format baru)
+        const apiUrl = "https://www.tikwm.com/api/";
+        
+        const response = await fetch(apiUrl, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({
+                url: url,
+                count: 12,
+                cursor: 0,
+                web: 1,
+                hd: 1
+            }),
+        });
 
-    // Try each API
-    for (let i = 0; i < apis.length; i++) {
-        try {
-            console.log(`Trying Facebook API ${i + 1}...`);
-            const downloadUrl = await apis[i]();
-            return res.status(200).json({
-                success: true,
-                downloadUrl: downloadUrl,
-                message: "Video berhasil ditemukan!",
-            });
-        } catch (err) {
-            console.error(`API ${i + 1} failed:`, err.message);
-            if (i === apis.length - 1) {
-                return res.status(500).json({
-                    success: false,
-                    message: "Gagal mengambil video Facebook. Link format /share/v/ mungkin butuh waktu lebih lama atau coba link format lama (fb.watch/xxx atau facebook.com/username/videos/id).",
+        const data = await response.json();
+        
+        // Check if video data exists
+        if (data.code === 0 && data.data) {
+            let downloadUrl = null;
+            
+            // Try HD first, then SD
+            if (data.data.hdplay) {
+                downloadUrl = data.data.hdplay;
+            } else if (data.data.play) {
+                downloadUrl = data.data.play;
+            } else if (data.data.wmplay) {
+                downloadUrl = data.data.wmplay;
+            }
+            
+            if (downloadUrl) {
+                return res.status(200).json({
+                    success: true,
+                    downloadUrl: downloadUrl,
+                    message: "Video berhasil ditemukan!",
                 });
             }
+        }
+        
+        throw new Error("TikWm API failed");
+        
+    } catch (err) {
+        console.error("Primary API failed:", err.message);
+        
+        // Fallback: Try Cobalt API
+        try {
+            const cobaltUrl = "https://api.cobalt.tools/api/json";
+            
+            const response = await fetch(cobaltUrl, {
+                method: "POST",
+                headers: {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    url: url,
+                    vCodec: "h264",
+                    vQuality: "720",
+                    isAudioOnly: false,
+                }),
+            });
+            
+            const data = await response.json();
+            
+            if (data.status === "redirect" || data.status === "stream") {
+                return res.status(200).json({
+                    success: true,
+                    downloadUrl: data.url,
+                    message: "Video berhasil ditemukan (Cobalt API)!",
+                });
+            }
+            
+            throw new Error("Cobalt API failed");
+            
+        } catch (err2) {
+            console.error("Fallback API failed:", err2.message);
+            return res.status(500).json({
+                success: false,
+                message: "Gagal mengambil video Facebook. Format link /share/v/ atau /reel/ mungkin belum fully support. Coba gunakan link format lama: fb.watch/xxx atau facebook.com/username/videos/id",
+            });
         }
     }
 }
