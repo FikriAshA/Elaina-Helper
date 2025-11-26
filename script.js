@@ -53,7 +53,7 @@ async function handleDownload() {
     }
     
     hideResults();
-    setLoading(true);
+    setLoading(true, platform);
     
     try {
         const timeoutPromise = new Promise((_, reject) => 
@@ -545,13 +545,23 @@ function hideResults() {
     errorDiv.style.display = 'none';
 }
 
-function setLoading(isLoading) {
+function setLoading(isLoading, platform = null) {
     if (isLoading) {
-        btnText.style.display = 'none';
+        let loadingText = 'Casting spell...';
+        
+        if (platform === 'facebook') {
+            loadingText = 'Casting spell for Facebook...';
+        } else if (platform === 'tiktok') {
+            loadingText = 'Casting spell for TikTok...';
+        }
+        
+        btnText.textContent = loadingText;
+        btnText.style.display = 'inline';
         btnLoader.style.display = 'inline-block';
         downloadBtn.disabled = true;
         videoUrlInput.disabled = true;
     } else {
+        btnText.textContent = '✦ Cast Download Spell ✦';
         btnText.style.display = 'inline';
         btnLoader.style.display = 'none';
         downloadBtn.disabled = false;
