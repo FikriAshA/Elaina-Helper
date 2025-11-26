@@ -256,7 +256,7 @@ async function fetchFacebookVideo(url) {
             platform: 'facebook',
             title: title,
             author: author,
-            thumbnail: null, // Facebook API tidak return thumbnail
+            thumbnail: data.thumbnail || null, // Use scraped thumbnail if available
             note: '✨ Video diambil dalam kualitas terbaik yang tersedia',
             downloadLinks: [{
                 quality: '🎥 HD Quality',
