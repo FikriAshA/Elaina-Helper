@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Elaina’s Enchanted Vault</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="magic-background">
+      <div class="floating-magic">
+        <span class="magic-star star-1">✦</span>
+        <span class="magic-star star-2">✧</span>
+        <span class="magic-star star-3">✦</span>
+        <span class="magic-star star-4">✧</span>
+        <span class="magic-star star-5">✦</span>
+        <span class="magic-star star-6">✧</span>
+      </div>
+    </div>
+
+    <div class="container">
+      <header>
+        <div class="character-space">
+          <img src="elaina.png" alt="Elaina" class="character-img" />
+        </div>
+        <div class="title-section">
+          <div class="magic-accent">
+            <span class="star">✦</span>
+            <span class="divider">—</span>
+            <span class="star">✧</span>
+            <span class="divider">—</span>
+            <span class="star">✦</span>
+          </div>
+          <h1>The Wandering Witch's</h1>
+          <h2>Spellbound Video Keeper</h2>
+          <p class="subtitle">A magical journey to save your favorite videos</p>
+        </div>
+      </header>
+      <main>
+        <div class="download-form">
+          <div class="input-wrapper">
+            <div class="input-icon">🔗</div>
+            <input
+              type="text"
+              id="videoUrl"
+              placeholder="Enter video link from your journey..."
+              autocomplete="off"
+            />
+          </div>
+          <button id="downloadBtn" class="download-btn">
+            <span id="btnText">
+              <span class="btn-icon">✦</span>
+              Cast Download Spell
+              <span class="btn-icon">✦</span>
+            </span>
+            <span id="btnLoader" class="loader" style="display: none"></span>
+          </button>
+        </div>
+
+        <div id="result" class="result" style="display: none">
+          <div class="video-info">
+            <div class="success-badge">
+              <span class="badge-icon">✨</span>
+              <h3>Magic Successful!</h3>
+            </div>
+            <div class="video-preview" id="videoPreview"></div>
+            <div class="download-options" id="downloadOptions"></div>
+          </div>
+        </div>
+
+        <div id="error" class="error" style="display: none">
+          <div class="error-icon">⚠</div>
+          <p id="errorMessage"></p>
+        </div>
+
+        <div class="info-section">
+          <div class="info-header">
+            <span class="info-icon"></span>
+            <h3>Spell Instructions</h3>
+          </div>
+          <div class="steps-container">
+            <div class="step-card">
+              <div class="step-number">I</div>
+              <p>Copy video link from Facebook, TikTok, or Instagram</p>
+            </div>
+            <div class="step-card">
+              <div class="step-number">II</div>
+              <p>Paste the link in the magical input</p>
+            </div>
+            <div class="step-card">
+              <div class="step-number">III</div>
+              <p>Cast the download spell</p>
+            </div>
+            <div class="step-card">
+              <div class="step-number">IV</div>
+              <p>Select your desired quality</p>
+            </div>
+          </div>
+          <div class="note">
+            <div class="note-header">
+              <span>✦</span>
+              <strong>Witch's Wisdom:</strong>
+            </div>
+            <ul>
+              <li>• Ensure the video is publicly accessible</li>
+              <li>• This magic uses third-party enchantments</li>
+              <li>• Respect the creator's rights on your journey</li>
+            </ul>
+          </div>
+        </div>
+      </main>
+
+      <footer>
+        <div class="footer-decoration">
+          <span class="star">✦</span>
+          <span class="divider">―</span>
+          <span class="star">✧</span>
+          <span class="divider">―</span>
+          <span class="star">✦</span>
+        </div>
+        <p>"A journey of a thousand videos begins with a single download"</p>
+        <p class="footer-sub">— The Wandering Witch</p>
+      </footer>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
