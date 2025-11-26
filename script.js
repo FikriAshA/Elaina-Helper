@@ -235,14 +235,31 @@ async function fetchFacebookVideo(url) {
             throw new Error(data.message || 'Gagal mengambil video');
         }
         
-        // Return format yang konsisten
+        // Extract author from URL if possible
+        let author = 'Facebook User';
+        const authorMatch = url.match(/facebook\.com\/([^\/\?]+)/);
+        if (authorMatch && authorMatch[1] && !['share', 'watch', 'reel', 'video', 'videos'].includes(authorMatch[1])) {
+            author = authorMatch[1];
+        }
+        
+        // Generate better title based on URL type
+        let title = '📱 Facebook Video';
+        if (url.includes('/reel/')) {
+            title = '🎬 Facebook Reel';
+        } else if (url.includes('/share/')) {
+            title = '🔗 Facebook Shared Video';
+        }
+        
+        // Return format yang konsisten dengan info lebih lengkap
         return {
             success: true,
             platform: 'facebook',
-            title: 'Facebook Video',
-            thumbnail: 'https://via.placeholder.com/640x360?text=Facebook+Video',
+            title: title,
+            author: author,
+            thumbnail: null, // Facebook API tidak return thumbnail
+            note: '✨ Video diambil dalam kualitas terbaik yang tersedia',
             downloadLinks: [{
-                quality: 'HD Quality',
+                quality: '🎥 HD Quality',
                 size: 'Best Available',
                 url: data.downloadUrl
             }]
@@ -349,29 +366,40 @@ function displayResults(data) {
     // Store data globally for download function
     window.currentVideoData = data;
     
-    // Create video preview
-    const thumbnailHtml = data.thumbnail ? 
-        `<img src="${data.thumbnail}" alt="Video thumbnail" onerror="this.src='https://via.placeholder.com/640x360?text=Video+Preview'">` :
-        `<div style="background: #f0f0f0; padding: 60px; border-radius: 8px;">📹 Video Preview</div>`;
+    // Create video preview dengan styling lebih bagus
+    let thumbnailHtml;
+    if (data.thumbnail) {
+        thumbnailHtml = `<img src="${data.thumbnail}" alt="Video thumbnail" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <div style="display: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 80px; border-radius: 12px; color: white; font-size: 48px; justify-content: center; align-items: center;">
+            ${data.platform === 'facebook' ? '📘' : data.platform === 'tiktok' ? '🎵' : '📹'}
+        </div>`;
+    } else {
+        // Fallback untuk Facebook (no thumbnail)
+        thumbnailHtml = `<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 80px; border-radius: 12px; color: white; font-size: 48px; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+            ${data.platform === 'facebook' ? '📘' : data.platform === 'tiktok' ? '🎵' : '📹'}
+        </div>`;
+    }
     
     videoPreview.innerHTML = `
         <div style="text-align: center;">
             ${thumbnailHtml}
-            <p style="margin-top: 10px; font-weight: 600; color: #333;">${data.title || 'Video'}</p>
-            ${data.duration ? `<p style="color: #666; font-size: 14px;">Durasi: ${data.duration}</p>` : ''}
-            ${data.author ? `<p style="color: #666; font-size: 14px;">Oleh: ${data.author}</p>` : ''}
-            ${data.note ? `<p style="margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 6px; font-size: 13px; color: #856404; text-align: left; white-space: pre-line;">${data.note}</p>` : ''}
+            <p style="margin-top: 16px; font-weight: 600; color: #333; font-size: 16px;">${data.title || 'Video'}</p>
+            ${data.author ? `<p style="color: #8B7AB8; font-size: 14px; margin-top: 4px;">👤 ${data.author}</p>` : ''}
+            ${data.duration ? `<p style="color: #666; font-size: 14px; margin-top: 4px;">⏱️ ${data.duration}</p>` : ''}
+            ${data.note ? `<div style="margin-top: 16px; padding: 12px 16px; background: linear-gradient(135deg, rgba(147, 112, 219, 0.1), rgba(139, 122, 184, 0.1)); border-left: 3px solid #9370DB; border-radius: 8px; font-size: 13px; color: #6B5B95; text-align: left; line-height: 1.6;">${data.note}</div>` : ''}
         </div>
     `;
     
-    // Create download options
+    // Create download options dengan styling lebih bagus
     downloadOptions.innerHTML = data.downloadLinks.map((link, index) => `
-        <button class="quality-btn" onclick="downloadVideo(${index}, '${link.quality}')">
-            <span>
-                <strong>${link.quality}</strong>
-                <span style="color: #666; font-size: 13px; display: block;">${link.size}</span>
+        <button class="quality-btn" onclick="downloadVideo(${index}, '${link.quality}')" style="background: white; border: 2px solid #D3CCE3; padding: 16px 20px; border-radius: 12px; cursor: pointer; transition: all 0.3s ease; display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 12px; font-family: 'Cormorant Garamond', serif;">
+            <span style="text-align: left;">
+                <strong style="color: #6B5B95; font-size: 15px; display: block; margin-bottom: 4px;">${link.quality}</strong>
+                <span style="color: #8B7AB8; font-size: 13px; display: block;">${link.size}</span>
             </span>
-            <span class="quality-badge">${link.manual ? '🔗 Buka' : '⬇ Download'}</span>
+            <span style="background: linear-gradient(135deg, #9370DB, #8B7AB8); color: white; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;">
+                ${link.manual ? '🔗 Buka' : '⬇ Download'}
+            </span>
         </button>
     `).join('');
     
