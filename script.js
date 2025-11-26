@@ -216,7 +216,6 @@ async function fetchFacebookVideo(url) {
     console.log('Trying Facebook backend API...');
     
     try {
-        // Call backend API (Vercel Serverless Function)
         const response = await fetchWithTimeout('/api/facebook', {
             method: 'POST',
             headers: {
@@ -235,14 +234,12 @@ async function fetchFacebookVideo(url) {
             throw new Error(data.message || 'Gagal mengambil video');
         }
         
-        // Extract author from URL if possible
         let author = 'Facebook User';
         const authorMatch = url.match(/facebook\.com\/([^\/\?]+)/);
         if (authorMatch && authorMatch[1] && !['share', 'watch', 'reel', 'video', 'videos'].includes(authorMatch[1])) {
             author = authorMatch[1];
         }
         
-        // Generate better title based on URL type
         let title = '📱 Facebook Video';
         if (url.includes('/reel/')) {
             title = '🎬 Facebook Reel';
@@ -250,13 +247,12 @@ async function fetchFacebookVideo(url) {
             title = '🔗 Facebook Shared Video';
         }
         
-        // Return format yang konsisten dengan info lebih lengkap
         return {
             success: true,
             platform: 'facebook',
             title: title,
             author: author,
-            thumbnail: data.thumbnail || null, // Use scraped thumbnail if available
+            thumbnail: data.thumbnail || null,
             note: '✨ Video diambil dalam kualitas terbaik yang tersedia',
             downloadLinks: [{
                 quality: '🎥 HD Quality',
@@ -356,27 +352,27 @@ function formatDuration(seconds) {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
-// Display results
 function displayResults(data) {
     if (!data.success) {
         showError('Gagal mengambil video');
         return;
     }
     
-    // Store data globally for download function
     window.currentVideoData = data;
     
-    // Create video preview dengan styling lebih bagus
     let thumbnailHtml;
     if (data.thumbnail) {
         thumbnailHtml = `<img src="${data.thumbnail}" alt="Video thumbnail" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-        <div style="display: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 80px; border-radius: 12px; color: white; font-size: 48px; justify-content: center; align-items: center;">
-            ${data.platform === 'facebook' ? '📘' : data.platform === 'tiktok' ? '🎵' : '📹'}
+        <div style="display: none; background: linear-gradient(135deg, #9370DB 0%, #8B7AB8 100%); padding: 60px 40px; border-radius: 12px; color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;">
+            <div style="font-size: 48px; margin-bottom: 16px;">📹</div>
+            <div style="font-size: 16px; font-weight: 500; opacity: 0.9;">Preview tidak tersedia</div>
+            <div style="font-size: 13px; margin-top: 8px; opacity: 0.7;">Video siap didownload</div>
         </div>`;
     } else {
-        // Fallback untuk Facebook (no thumbnail)
-        thumbnailHtml = `<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 80px; border-radius: 12px; color: white; font-size: 48px; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-            ${data.platform === 'facebook' ? '📘' : data.platform === 'tiktok' ? '🎵' : '📹'}
+        thumbnailHtml = `<div style="background: linear-gradient(135deg, #9370DB 0%, #8B7AB8 100%); padding: 60px 40px; border-radius: 12px; color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;">
+            <div style="font-size: 48px; margin-bottom: 16px;">📹</div>
+            <div style="font-size: 16px; font-weight: 500; opacity: 0.9;">Preview tidak tersedia</div>
+            <div style="font-size: 13px; margin-top: 8px; opacity: 0.7;">Video siap didownload</div>
         </div>`;
     }
     
@@ -390,7 +386,6 @@ function displayResults(data) {
         </div>
     `;
     
-    // Create download options dengan styling lebih bagus
     downloadOptions.innerHTML = data.downloadLinks.map((link, index) => `
         <button class="quality-btn" onclick="downloadVideo(${index}, '${link.quality}')" style="background: white; border: 2px solid #D3CCE3; padding: 16px 20px; border-radius: 12px; cursor: pointer; transition: all 0.3s ease; display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 12px; font-family: 'Cormorant Garamond', serif;">
             <span style="text-align: left;">
@@ -405,7 +400,6 @@ function displayResults(data) {
     
     resultDiv.style.display = 'block';
     
-    // Scroll to result
     resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
@@ -421,27 +415,22 @@ async function downloadVideo(linkIndex, quality) {
         const link = videoData.downloadLinks[linkIndex];
         const url = link.url;
         
-        // For manual/redirect links, just open
         if (link.manual || link.type === 'redirect') {
             window.open(url, '_blank');
             showNotification('Link dibuka di tab baru.\n\nCara download:\n1. Klik kanan pada media\n2. Pilih "Save as"', 'info');
             return;
         }
         
-        // Show download notification
         showNotification('Memulai download...', 'info');
         
-        // Generate filename from username and title
         const author = videoData.author || 'user';
         const title = videoData.title || 'video';
         const platform = videoData.platform || 'social';
         
-        // Clean filename - remove special characters
         const cleanAuthor = author.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30);
         const cleanTitle = title.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 50);
         const timestamp = Date.now();
         
-        // Determine file extension
         let extension = 'mp4';
         if (link.type === 'image' || quality.toLowerCase().includes('image') || quality.toLowerCase().includes('photo')) {
             extension = 'jpg';
@@ -449,7 +438,6 @@ async function downloadVideo(linkIndex, quality) {
             extension = 'mp3';
         }
         
-        // Create filename: platform_username_title_timestamp.ext
         const filename = `${platform}_${cleanAuthor}_${cleanTitle}_${timestamp}.${extension}`;
         
         try {
@@ -466,7 +454,6 @@ async function downloadVideo(linkIndex, quality) {
             if (response.ok) {
                 const blob = await response.blob();
                 
-                // Create download link
                 const downloadUrl = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = downloadUrl;
